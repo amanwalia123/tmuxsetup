@@ -118,12 +118,26 @@ install_config() {
     if [[ ! -f "$CONFIG_FILE" ]]; then
         print_info "Downloading configuration file from GitHub..."
         CONFIG_URL="https://raw.githubusercontent.com/amanwalia123/tmuxsetup/main/.tmux.conf"
+        
+        # Try curl first, then wget
         if command -v curl &> /dev/null; then
-            curl -fsSL "$CONFIG_URL" -o "$HOME/.tmux.conf.tmp"
+            if ! curl -fsSL "$CONFIG_URL" -o "$HOME/.tmux.conf.tmp"; then
+                print_error "Failed to download configuration file with curl"
+                exit 1
+            fi
         elif command -v wget &> /dev/null; then
-            wget -q "$CONFIG_URL" -O "$HOME/.tmux.conf.tmp"
+            if ! wget -q "$CONFIG_URL" -O "$HOME/.tmux.conf.tmp"; then
+                print_error "Failed to download configuration file with wget"
+                exit 1
+            fi
         else
-            print_error "Neither curl nor wget is available. Cannot download configuration."
+            print_error "Neither curl nor wget is available. Please install one of them first:"
+            if [[ "$OS" == "linux" ]]; then
+                print_error "  Ubuntu/Debian: sudo apt-get install curl"
+                print_error "  CentOS/RHEL: sudo yum install curl"
+                print_error "  Fedora: sudo dnf install curl"
+                print_error "  Arch: sudo pacman -S curl"
+            fi
             exit 1
         fi
         
@@ -155,7 +169,7 @@ install_clipboard_support() {
     
     if [[ "$OS" == "linux" ]]; then
         if command -v apt-get &> /dev/null; then
-            sudo apt-get install -y xclip
+            sudo apt-get update && sudo apt-get install -y xclip
         elif command -v yum &> /dev/null; then
             sudo yum install -y xclip
         elif command -v dnf &> /dev/null; then
@@ -164,8 +178,45 @@ install_clipboard_support() {
             sudo pacman -S --noconfirm xclip
         else
             print_warning "Could not install xclip. Clipboard support may not work."
+            print_info "You can manually install xclip later for clipboard support."
         fi
     fi
+}
+
+# Check for basic dependencies
+check_dependencies() {
+    print_info "Checking basic dependencies..."
+    
+    local missing_deps=()
+    
+    # Check for curl or wget (needed for downloading config)
+    if ! command -v curl &> /dev/null && ! command -v wget &> /dev/null; then
+        missing_deps+=("curl or wget")
+    fi
+    
+    # Check for basic shell tools
+    if ! command -v cut &> /dev/null; then
+        missing_deps+=("cut")
+    fi
+    
+    if ! command -v date &> /dev/null; then
+        missing_deps+=("date")
+    fi
+    
+    if [[ ${#missing_deps[@]} -gt 0 ]]; then
+        print_error "Missing required dependencies: ${missing_deps[*]}"
+        print_info "Please install them using your package manager:"
+        if [[ "$OS" == "linux" ]]; then
+            print_info "  Ubuntu/Debian: sudo apt-get install curl coreutils"
+            print_info "  CentOS/RHEL: sudo yum install curl coreutils"
+            print_info "  Fedora: sudo dnf install curl coreutils"
+            print_info "  Arch: sudo pacman -S curl coreutils"
+        fi
+        return 1
+    fi
+    
+    print_success "All dependencies are available"
+    return 0
 }
 
 # Display usage information
@@ -220,6 +271,12 @@ main() {
     
     # Detect OS
     detect_os
+    
+    # Check basic dependencies first
+    if ! check_dependencies; then
+        print_error "Please install the missing dependencies and run the script again."
+        exit 1
+    fi
     
     # Check if tmux is installed, if not, install it
     if ! check_tmux; then

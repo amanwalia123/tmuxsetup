@@ -114,9 +114,25 @@ install_config() {
     SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
     CONFIG_FILE="$SCRIPT_DIR/.tmux.conf"
     
+    # If config file doesn't exist locally, download it from GitHub
     if [[ ! -f "$CONFIG_FILE" ]]; then
-        print_error "Configuration file not found: $CONFIG_FILE"
-        exit 1
+        print_info "Downloading configuration file from GitHub..."
+        CONFIG_URL="https://raw.githubusercontent.com/amanwalia123/tmuxsetup/main/.tmux.conf"
+        if command -v curl &> /dev/null; then
+            curl -fsSL "$CONFIG_URL" -o "$HOME/.tmux.conf.tmp"
+        elif command -v wget &> /dev/null; then
+            wget -q "$CONFIG_URL" -O "$HOME/.tmux.conf.tmp"
+        else
+            print_error "Neither curl nor wget is available. Cannot download configuration."
+            exit 1
+        fi
+        
+        if [[ ! -f "$HOME/.tmux.conf.tmp" ]]; then
+            print_error "Failed to download configuration file"
+            exit 1
+        fi
+        
+        CONFIG_FILE="$HOME/.tmux.conf.tmp"
     fi
     
     # Backup existing config
@@ -124,6 +140,12 @@ install_config() {
     
     # Copy new config
     cp "$CONFIG_FILE" "$HOME/.tmux.conf"
+    
+    # Clean up temporary file if it was downloaded
+    if [[ -f "$HOME/.tmux.conf.tmp" ]]; then
+        rm "$HOME/.tmux.conf.tmp"
+    fi
+    
     print_success "Configuration installed to $HOME/.tmux.conf"
 }
 

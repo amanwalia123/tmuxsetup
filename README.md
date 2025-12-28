@@ -39,6 +39,12 @@ A cross-platform tmux configuration that works seamlessly on both macOS and Linu
 
 ### Installation
 
+#### One-Liner Installation (Recommended)
+```bash
+curl -fsSL https://raw.githubusercontent.com/amanwalia123/tmuxsetup/main/install.sh | bash
+```
+
+#### Manual Installation
 1. Clone this repository:
 ```bash
 git clone https://github.com/amanwalia123/tmuxsetup.git

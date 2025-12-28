@@ -5,10 +5,12 @@ A cross-platform tmux configuration that works seamlessly on both macOS and Linu
 ## Features
 
 ### 🎨 Visual Enhancements
-- 256 color support with true color enabled
+- True color support with optimized terminal settings
 - Custom status bar with useful information (session, time, user, hostname)
 - Color-coded pane borders for better visibility
 - Clean and minimal design
+- Automatic window renaming based on current command
+- Enhanced cursor shape support in modern terminals
 
 ### ⌨️ Improved Key Bindings
 - **Prefix changed to `Ctrl+a`** (more ergonomic than default `Ctrl+b`)
@@ -154,6 +156,16 @@ Ctrl+a d
 | `y` | Copy selection (in copy mode) |
 | `Ctrl+a r` | Reload configuration |
 | `Ctrl+a ?` | List all key bindings |
+| `Ctrl+a Space` | Switch to last pane |
+| `Ctrl+a Tab` | Switch to last window |
+| `Ctrl+a C-k` | Clear pane history |
+| `Ctrl+a z` | Toggle pane zoom |
+| `Ctrl+a C-u` | Swap with previous pane |
+| `Ctrl+a C-d` | Swap with next pane |
+| `Ctrl+a b` | Break pane into new window |
+| `Ctrl+a J` | Join pane from another window |
+| `Ctrl+a s` | Show session tree |
+| `Ctrl+a d` | Detach from session |
 
 #### Mouse Support
 - Click to select a pane
